@@ -1,21 +1,10 @@
-FROM ubuntu:16.04
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    DISPLAY=:99
+FROM ubuntu:22.04
 
 RUN apt-get update && \
-    apt-get install -y xterm openssl inetutils-ping libjpeg8-dev libxml2 xvfb && \
-    apt-get install -y vim less wget
+    apt-get install -y xterm openssl inetutils-ping libjpeg8-dev libxml2 libxm4 xvfb vim nano less wget libssl-dev
 
-COPY ptools-init.dat /opt/data/ptools-local/ptools-init.dat
-COPY install-pathway-tools.sh /opt/bin/install-pathway-tools.sh
-COPY run-pathway-tools.sh /opt/bin/run-pathway-tools.sh
-COPY pathway-tools-21.0-linux-64-tier1-install /opt/bin/pathway-tools-21.0-linux-64-tier1-install
+COPY ./pathway-tools-26.0-linux-64-tier1-install /opt
+RUN /opt/pathway-tools-26.0-linux-64-tier1-install --mode unattended --InstallDir /opt/pathway-tools
 
-RUN /opt/bin/install-pathway-tools.sh
-
-CMD [ "/opt/bin/run-pathway-tools.sh" ]
-
-#
-# docker build -t pathway:21.0 .
-# docker run --volume `pwd`:/mnt --publish 1555:1555 --rm --name pathway -it pathway:21.0 /bin/bash
+EXPOSE 5000
+ENTRYPOINT [ "/opt/pathway-tools/pathway-tools", "-python" ]
