@@ -6,5 +6,5 @@ RUN apt-get update && \
 COPY ./pathway-tools-26.0-linux-64-tier1-install /opt
 RUN /opt/pathway-tools-26.0-linux-64-tier1-install --mode unattended --InstallDir /opt/pathway-tools
 
-EXPOSE 5000
-ENTRYPOINT [ "/opt/pathway-tools/pathway-tools", "-python" ]
+EXPOSE 5008
+ENTRYPOINT [ "/opt/pathway-tools/pathway-tools", "-lisp", "-python" ]
