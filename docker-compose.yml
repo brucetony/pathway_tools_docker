@@ -1,7 +1,7 @@
 version: '2'
 services:
   pathway:
-    image: biocyc/ptools
+    image: "biocyc/ptools:26.0"
     build: .
     ports:
-    - "5000:11450"
+    - "11450:5008"

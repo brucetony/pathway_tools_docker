@@ -1,42 +1,38 @@
-# pathway_tools_docker
-Docker files and instructions for setting up a web install of Pathway tools
+# Pathway Tools Docker - PythonCyc
+In order to use PythonCyc, I decided to fork the [BioCyc Docker Repo](https://github.com/biorack/pathway_tools_docker) and alter the Dockerfile so that it will run as a server that PythonCyc can communicate with.
 
-The Docker image is based on **Ubuntu:16.04**, updated to have the required support libraries. Currently, the Dockerfile assumes that it is installing version 21.0 of the pathway tools, and expects you to provide the **pathway-tools-21.0-linux-64-tier1-install** installer in the current directory.
-
-There's an installation script which feeds the answers to the tool installer, **install-pathway-tools.sh**. This is run by Docker when it builds the image. It also has the name of the installer hard-coded.
+## Pathway Tools Docker Setup
+The Docker image is based on **Ubuntu:22.04**, updated to have the required support libraries. Currently, the Dockerfile assumes that it is installing version 26.0 of the pathway tools, and expects you to provide the **pathway-tools-26.0-linux-64-tier1-install** installer in this directory.
 
 Build the container with the following command:
 
 ```
-docker build -t pathway:21.0 .
+docker build -t biocyc/ptools:26.0
 ```
 
-The container will use a script for running the service automatically, **run-pathway-tools.sh**. It uses **Xvfb** to provide a headless X11 display to satisfy the bizarre need for X11 in a server process. You can run the container with this command:
+You can run the container with this command, choosing to bind the Python Server (5008) to whatever port you want on your local machine:
 
 ```
-docker run --volume `pwd`:/mnt --publish 1555:1555 --rm --name pathway -it pathway:21.0
+docker run -d -p <host-port>:5008 biocyc/ptools:26.0
 ```
 
-Then, if you visit **http://localhost:1555** on your host machine, you should see the pathway tools website.
+## PythonCyc
+To get PythonCyc to communicate with the Pathway Tools docker container, you have to set some configuration parameters. 
+If the container is running on your local machine, you can use `0.0.0.0` as the host name, otherwise provide the URL/IP to the server/machine. 
+For setting the host port, use the same port specified in the `docker run` command used above:
 
-Change the **pttools-init.dat** file if you need to modify the configuration, then rebuild the container.
+```python
+from pythoncyc import config
 
-# The User's manual...
-...is installed into /opt/pathway-tools/pathway-tools/aic-export/pathway-tools/ptools/21.0/doc/manuals in the container. It's also included in this repository, for good measure.
-
-# Chapter 10 has web setup
-
-# Some instructions for headless x-server
-http://bioinformatics.ai.sri.com/ptools/web-logout.html
-
-Basically, install pathway tools in the container and run the web server with
-
-```
-pathway_tools -www
+config.set_host_name('0.0.0.0')  # If running on local machine
+config.set_host_port(PTOOLS_HOST_PORT)
 ```
 
-This will launch a webservice and an x-server.  The webservice will use port 1555.  When you run the Dockerfile, map this port to a standard port like 80.
+Then you can verify it is working by executing the following commands:
+```python
+from pythoncyc import select_organism
 
-```
-docker run -p 1555:80 -v <your_pgdbs_folder>:/pathway_tools/aic_export/pgdbs/ -t <container_tag>
+meta = select_organism('meta')
+pwys = meta.all_pathways()
+print(pwys)
 ```
